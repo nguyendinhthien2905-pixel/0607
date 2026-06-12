@@ -1,0 +1,6 @@
+[
+    { "idSanPham": 1, "tenSanPham": "Cà phê đen", "giaBan": 15000, "hinhAnh": "☕" },
+    { "idSanPham": 2, "tenSanPham": "Hồng trà", "giaBan": 20000, "hinhAnh": "🍵" },
+    { "idSanPham": 3, "tenSanPham": "Gà rán", "giaBan": 35000, "hinhAnh": "🍗" },
+    { "idSanPham": 4, "tenSanPham": "Mì Ý", "giaBan": 45000, "hinhAnh": "🍝" }
+]

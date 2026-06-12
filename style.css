@@ -1,0 +1,798 @@
+/* --- THIẾT LẬP MẶC ĐỊNH --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f3f4f6; /* Màu nền xám nhạt */
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Chiều cao bằng 100% màn hình */
+    overflow: hidden; /* Chống cuộn toàn trang, chỉ cuộn phần sản phẩm */
+}
+
+/* --- PHẦN ĐẦU (HEADER) --- */
+.phan-dau {
+    background-color: #2563eb; /* Xanh dương */
+    color: white;
+    text-align: center;
+    padding: 16px;
+    font-size: 20px;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+/* --- KHU VỰC CHÍNH (MAIN) --- */
+.vung-chinh {
+    flex: 1; /* Chiếm toàn bộ không gian còn lại */
+    overflow-y: auto; /* Cho phép cuộn dọc */
+    padding: 16px;
+    padding-bottom: 100px; /* Chừa chỗ cho thanh thanh toán bên dưới */
+}
+
+/* --- LƯỚI SẢN PHẨM --- */
+.luoi-san-pham {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Mặc định 2 cột cho điện thoại */
+    gap: 16px; /* Khoảng cách giữa các món */
+}
+
+/* --- THẺ SẢN PHẨM --- */
+the-san-pham {
+    background-color: white;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80px; /* Thu gọn chiều cao so với 140px cũ */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+/* Hiệu ứng chạm/bấm trên điện thoại */
+.the-san-pham:active {
+    transform: scale(0.95);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    background-color: #f9fafb;
+}
+
+.the-san-pham .bieu-tuong {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+.the-san-pham .ten-mon {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    text-align: center;
+}
+
+.the-san-pham .gia-ban {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2563eb;
+    margin-top: 4px;
+}
+
+/* --- THANH THANH TOÁN DƯỚI ĐÁY (FOOTER) --- */
+.thanh-thanh-toan {
+    background-color: white;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.thong-tin-tien .nhan-tong-tien {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+    display: block;
+}
+
+.thong-tin-tien .so-tien {
+    font-size: 24px;
+    font-weight: 700;
+    color: #dc2626; /* Màu đỏ cho nổi bật */
+}
+
+.nut-tinh-tien {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+    transition: background-color 0.2s;
+}
+
+.nut-tinh-tien:active {
+    background-color: #1d4ed8;
+    transform: scale(0.98);
+}
+
+/* --- RESPONSIVE CHO MÀN HÌNH LỚN --- */
+/* Nếu mở trên iPad hoặc máy tính, sẽ tự động chuyển thành 4 hoặc 5 cột */
+@media (min-width: 768px) {
+    .luoi-san-pham {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+@media (min-width: 1024px) {
+    .luoi-san-pham {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+/* --- NÚT THÊM SẢN PHẨM Ở HEADER --- */
+.phan-dau {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nut-them-sp {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* --- KHUNG GIỎ HÀNG TRƯỢT TỪ DƯỚI LÊN --- */
+.khung-gio-hang {
+    position: fixed;
+    bottom: 80px; /* Nằm ngay trên thanh toán */
+    left: 0;
+    width: 100%;
+    background-color: white;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    box-shadow: 0 -10px 20px rgba(0,0,0,0.15);
+    padding: 20px;
+    z-index: 20;
+    /* Hiệu ứng trượt */
+    transform: translateY(150%);
+    transition: transform 0.3s ease-in-out;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Class này được JS thêm vào để đẩy giỏ hàng lên */
+.khung-gio-hang.hien-thi {
+    transform: translateY(0); 
+}
+
+.tieu-de-gio-hang {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 10px;
+}
+.nut-dong {
+    background: #f3f4f6;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+.mon-trong-gio {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px dashed #e5e7eb;
+}
+.nut-in-hoa-don {
+    width: 100%;
+    margin-top: 16px;
+    background-color: #10b981; /* Xanh lá */
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* --- MODAL THÊM SẢN PHẨM MỚI --- */
+.modal-nen {
+    display: none; /* Ẩn đi */
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 50;
+    justify-content: center;
+    align-items: center;
+}
+.modal-noi-dung {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.modal-noi-dung input {
+    padding: 10px; border: 1px solid #ccc; border-radius: 8px;
+}
+.modal-nut { display: flex; gap: 10px; }
+.modal-nut button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; }
+.nut-huy { background: #e5e7eb; }
+.nut-luu { background: #2563eb; color: white; }
+
+/* --- CSS CHUYÊN DỤNG CHO VIỆC IN ẤN --- */
+.hoa-don-in {
+    display: none; /* Bình thường ẩn đi trên web */
+    font-family: monospace; /* Font chữ giống máy in bill */
+}
+
+/* ------------------------------------------------ */
+/* CẤU HÌNH IN ẤN - ĐÃ TỐI ƯU CHO KHỔ 80MM ANDROID */
+/* ------------------------------------------------ */
+@media print {
+    @page {
+        margin: 0; 
+        /* Đã bỏ dòng size đi vì app in của bạn tự nhận dạng khổ 80mm Roll rồi */
+    }
+    
+    body * { visibility: hidden; }
+    
+    #khuVucIn, #khuVucIn * { 
+        visibility: visible; 
+    }
+    
+    #khuVucIn {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%; /* QUAN TRỌNG: Cho phép bung tràn 100% bề ngang giấy */
+        padding: 5mm; /* Chừa lề một chút để không bị in lẹm ra ngoài mép */
+        box-sizing: border-box;
+        display: block;
+        font-family: Arial, sans-serif;
+        color: black;
+    }
+
+    .tieu-de-in {
+        font-size: 28px; /* Tăng mạnh size chữ tiêu đề */
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .ten-khach-in {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .duong-ke-in {
+        border-bottom: 2px dashed black; /* Cho nét đứt đậm và rõ hơn */
+        margin-bottom: 12px;
+        margin-top: 8px;
+    }
+
+    .dong-in {
+        margin-bottom: 16px;
+    }
+
+    .ten-sp-in {
+        font-size: 20px; /* Tăng size tên sản phẩm */
+        font-weight: bold;
+        color: black;
+        margin-bottom: 6px;
+    }
+
+    .chi-tiet-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 20px; /* Tăng size giá tiền */
+    }
+
+    .tong-cong-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 26px; /* Tăng size tổng tiền cho nổi bật */
+        font-weight: bold;
+        margin-bottom: 10px;
+        margin-top: 10px;
+    }
+
+    .tien-mat-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+
+    .duong-ke-cham-in {
+        border-bottom: 2px dotted black;
+        margin-bottom: 12px;
+    }
+
+    .thoi-gian-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 16px;
+    }
+}
+.vung-tim-kiem {
+    padding: 12px 16px;
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.vung-tim-kiem input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+    background-color: #f9fafb;
+    transition: border-color 0.2s;
+}
+
+.vung-tim-kiem input:focus {
+    border-color: #2563eb;
+    background-color: white;
+}
+
+/* --- ĐỊNH DẠNG DÒNG MÓN ĂN TRONG GIỎ HÀNG --- */
+.mon-trong-gio {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px dashed #e5e7eb;
+}
+
+.thong-tin-mon {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.ten-mon-gio {
+    font-weight: 600;
+    color: #374151;
+    font-size: 15px;
+}
+
+.gia-mon-gio {
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Cụm nút tăng giảm */
+.bo-dieu-khien-sl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bo-dieu-khien-sl button {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nut-giam {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+.nut-tang {
+    background-color: #e0e7ff;
+    color: #4338ca;
+}
+
+.so-luong-hien-tai {
+    font-weight: bold;
+    font-size: 16px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.nut-xoa-mon {
+    background: transparent;
+    font-size: 14px;
+    padding-left: 4px;
+}
+
+.bo-dieu-khien-sl button:active {
+    transform: scale(0.9);
+}
+
+.nhap-so-luong {
+    width: 45px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 4px 0;
+    color: #1f2937;
+    /* Ẩn mũi tên tăng/giảm mặc định của ô input number */
+    -moz-appearance: textfield;
+}
+
+.nhap-so-luong::-webkit-outer-spin-button,
+.nhap-so-luong::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* ------------------------------------------------ */
+/* YÊU CẦU 3: CẤU HÌNH IN ẤN (KHỔ K80 VÀ ẨN TIÊU ĐỀ WEB) */
+/* ------------------------------------------------ */
+.hoa-don-in {
+    display: none;
+}
+
+@media print {
+    /* Quan trọng: margin 0 ở @page sẽ ép trình duyệt ẩn dòng địa chỉ IP và ngày tháng (Header/Footer) mặc định */
+    @page {
+        size: 80mm auto; /* Khổ giấy máy in bill K80 */
+        margin: 0; 
+    }
+    
+    body * { visibility: hidden; }
+    
+    #khuVucIn, #khuVucIn * { 
+        visibility: visible; 
+    }
+    
+    #khuVucIn {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 72mm; /* Lùi lại chút so với 80mm để tránh lẹm biên máy in */
+        padding: 4mm;
+        display: block;
+        font-family: Arial, sans-serif; /* Font cơ bản cho máy in */
+        color: black;
+    }
+
+    .tieu-de-in {
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+
+    .duong-ke-in {
+        border-bottom: 1px dashed black;
+        margin-bottom: 10px;
+    }
+
+    /* Thiết kế form giống hệt ảnh mẫu bạn cung cấp */
+    .dong-in {
+        margin-bottom: 12px;
+    }
+
+    .ten-sp-in {
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 4px;
+        /* font-weight: bold; (Bỏ in đậm nếu bạn muốn giống hệt ảnh mờ) */
+    }
+
+    .chi-tiet-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .thanh-tien-in {
+        font-weight: bold;
+        color: black;
+    }
+}
+/* --- SỬA THÀNH DẠNG DANH SÁCH (TABLE) NHƯ ẢNH 3 --- */
+.luoi-san-pham {
+    display: flex;
+    flex-direction: column; /* Xếp dọc từ trên xuống */
+    gap: 8px; /* Khoảng cách giữa các dòng */
+}
+
+.the-san-pham {
+    background-color: white;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: row; /* Tên trái, giá phải */
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.the-san-pham:active {
+    background-color: #f3f4f6;
+}
+
+.the-san-pham .ten-mon {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.the-san-pham .gia-ban {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2563eb;
+}
+
+/* ------------------------------------------------ */
+/* CẤU HÌNH IN ẤN (THÊM PHẦN TỔNG CỘNG NHƯ ẢNH 1) */
+/* ------------------------------------------------ */
+.hoa-don-in {
+    display: none;
+}
+
+@media print {
+    @page {
+        size: 80mm auto; 
+        margin: 0; 
+    }
+    
+    body * { visibility: hidden; }
+    
+    #khuVucIn, #khuVucIn * { 
+        visibility: visible; 
+    }
+    
+    #khuVucIn {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 72mm; 
+        padding: 4mm;
+        display: block;
+        font-family: Arial, sans-serif;
+        color: black;
+    }
+
+    .tieu-de-in {
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+
+    .duong-ke-in {
+        border-bottom: 1px dashed black;
+        margin-bottom: 10px;
+        margin-top: 5px;
+    }
+
+    .dong-in {
+        margin-bottom: 12px;
+    }
+
+    .ten-sp-in {
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+    .chi-tiet-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .thanh-tien-in {
+        font-weight: bold;
+        color: black;
+    }
+
+    /* CSS MỚI CHO PHẦN TỔNG CỘNG CHÂN TRANG */
+    .tong-cong-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+    .tien-mat-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    .duong-ke-cham-in {
+        border-bottom: 1px dotted black;
+        margin-bottom: 8px;
+    }
+
+    .thoi-gian-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #555;
+    }
+}
+/* --- NÚT HEADER --- */
+.nut-header {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+/* --- GIAO DIỆN LỊCH SỬ HÓA ĐƠN TÀN MÀN HÌNH --- */
+.modal-toan-man-hinh {
+    display: none; 
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%;
+    background-color: #f3f4f6;
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.header-lich-su {
+    background-color: #2563eb;
+    color: white;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+}
+
+.header-lich-su h2 {
+    font-size: 18px;
+}
+
+.nut-dong-lich-su {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.noi-dung-lich-su {
+    padding: 16px;
+}
+
+/* Bảng danh sách 3 cột */
+.bang-lich-su {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.bang-lich-su th {
+    background-color: #e5e7eb;
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+    color: #374151;
+}
+
+.bang-lich-su td {
+    padding: 12px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.bang-lich-su .cot-ten { font-weight: bold; color: #111827; }
+.bang-lich-su .cot-ngay { color: #6b7280; }
+.nut-in-lai {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+}
+.nut-in-lai:active { background-color: #059669; }
+
+/* Thêm định dạng Tên khách hàng khi In hóa đơn */
+@media print {
+    .ten-khach-in {
+        font-size: 14px;
+        font-weight: bold;
+        text-align: left;
+        margin-bottom: 5px;
+        margin-top: -5px;
+    }
+}
+/* --- TÌM KIẾM TRONG LỊCH SỬ --- */
+.vung-loc-lich-su {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.vung-loc-lich-su input {
+    flex: 1; /* Hai ô tự động chia đều chiều ngang */
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background-color: white;
+}
+
+.vung-loc-lich-su input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37,99,235, 0.2);
+}
+
+/* Nút quay lại trang chủ */
+.nut-quay-lai {
+    background-color: transparent;
+    border: 1px solid white;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.nut-quay-lai:active, .nut-quay-lai:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Nếu màn hình điện thoại dọc hẹp quá thì tự động xếp 2 thanh tìm kiếm dọc xuống */
+@media (max-width: 600px) {
+    .vung-loc-lich-su {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
