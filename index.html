@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phiếu Giao Hàng</title>
+    <title>Phiếu Giao Hàng Cloud</title>
     <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
     <header class="phan-dau">
         <h1>Phiếu giao hàng</h1>
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 6px;">
             <button class="nut-header nut-lich-su" onclick="moLichSuHoaDon()">🕒 Lịch sử</button>
-            <button class="nut-header nut-them-sp" onclick="moFormThemSP()">➕</button>
+            <button class="nut-header nut-them-sp" onclick="moFormThemSP()">➕ Món mới</button>
         </div>
     </header>
 
@@ -69,15 +72,13 @@
     <div id="modalLichSu" class="modal-toan-man-hinh">
         <div class="header-lich-su">
             <h2>Lịch sử hóa đơn</h2>
-            <button onclick="dongLichSuHoaDon()" class="nut-quay-lai">⬅ Quay lại trang chủ</button>
+            <button onclick="dongLichSuHoaDon()" class="nut-quay-lai">⬅ Quay lại</button>
         </div>
         <div class="noi-dung-lich-su">
-            
             <div class="vung-loc-lich-su">
                 <input type="text" id="locTenKhach" placeholder="🔍 Tìm tên khách hàng..." oninput="xuLyLocLichSu()">
                 <input type="text" id="locNgayIn" placeholder="📅 Tìm ngày (VD: 9/6)..." oninput="xuLyLocLichSu()">
             </div>
-
             <table class="bang-lich-su">
                 <thead>
                     <tr>
@@ -86,8 +87,7 @@
                         <th style="width: 25%">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody id="bangLichSuNoiDung">
-                    </tbody>
+                <tbody id="bangLichSuNoiDung"></tbody>
             </table>
         </div>
     </div>
@@ -97,22 +97,43 @@
     </div>
 
     <script>
+        // --- 1. KẾT NỐI ĐÁM MÂY FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxE-k_9dCzn68HcsP1RjMA4at8qCMmA18",
+            authDomain: "phieugiaohang-65257.firebaseapp.com",
+            projectId: "phieugiaohang-65257",
+            storageBucket: "phieugiaohang-65257.firebasestorage.app",
+            messagingSenderId: "966091847121",
+            appId: "1:966091847121:web:b443b7f153bb0bc502dcf0",
+            measurementId: "G-5NNJTEGV56"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         let danhSachSanPham = [];
         let gioHang = []; 
 
+        // --- 2. TẢI DỮ LIỆU TỪ ĐÁM MÂY ---
         async function taiDuLieu() {
-            const duLieuLuuTru = localStorage.getItem('duLieuSanPham');
-            if (duLieuLuuTru) {
-                danhSachSanPham = JSON.parse(duLieuLuuTru);
-                hienThiSanPham(danhSachSanPham);
-            } else {
-                try {
+            try {
+                const snapshot = await db.collection("sanPham").get();
+                if (!snapshot.empty) {
+                    // Nếu đám mây đã có dữ liệu
+                    danhSachSanPham = [];
+                    snapshot.forEach(doc => { danhSachSanPham.push(doc.data()); });
+                    hienThiSanPham(danhSachSanPham);
+                } else {
+                    // Nếu đám mây trống, lấy từ data.json gốc và tự động đẩy lên mây
                     const response = await fetch('data.json');
                     danhSachSanPham = await response.json();
                     hienThiSanPham(danhSachSanPham);
-                } catch (error) {
-                    danhSachSanPham = [];
+                    danhSachSanPham.forEach(sp => {
+                        db.collection("sanPham").doc(sp.idSanPham.toString()).set(sp);
+                    });
                 }
+            } catch (error) {
+                console.log("Lỗi tải dữ liệu Cloud:", error);
+                document.getElementById('khuVucSanPham').innerHTML = '<p>Không thể kết nối Internet</p>';
             }
         }
 
@@ -192,49 +213,48 @@
 
         function moGioHang() { if(gioHang.length > 0) document.getElementById('khungGioHang').classList.add('hien-thi'); }
         function dongGioHang() { document.getElementById('khungGioHang').classList.remove('hien-thi'); }
-        
         function moFormThemSP() { document.getElementById('modalThemSP').style.display = 'flex'; }
         function dongFormThemSP() { document.getElementById('modalThemSP').style.display = 'none'; }
         
-        function luuSanPhamMoi() {
+        // --- 3. ĐẨY SẢN PHẨM MỚI LÊN ĐÁM MÂY ---
+        async function luuSanPhamMoi() {
             const ten = document.getElementById('nhapTen').value.trim();
             const gia = document.getElementById('nhapGia').value;
             if(!ten || !gia) return alert("Vui lòng nhập đủ thông tin!");
-            danhSachSanPham.push({ idSanPham: Date.now(), tenSanPham: ten, giaBan: parseInt(gia) });
-            localStorage.setItem('duLieuSanPham', JSON.stringify(danhSachSanPham));
-            document.getElementById('thanhTimKiem').value = '';
-            hienThiSanPham(danhSachSanPham); dongFormThemSP();
-            document.getElementById('nhapTen').value = ''; document.getElementById('nhapGia').value = '';
+            
+            const spMoi = { idSanPham: Date.now(), tenSanPham: ten, giaBan: parseInt(gia) };
+            try {
+                await db.collection("sanPham").doc(spMoi.idSanPham.toString()).set(spMoi);
+                danhSachSanPham.push(spMoi);
+                document.getElementById('thanhTimKiem').value = '';
+                hienThiSanPham(danhSachSanPham); 
+                dongFormThemSP();
+                document.getElementById('nhapTen').value = ''; document.getElementById('nhapGia').value = '';
+            } catch (error) {
+                alert("Lỗi lưu mạng: " + error.message);
+            }
         }
 
-        /* --- LOGIC XỬ LÝ IN VÀ LƯU HÓA ĐƠN --- */
         function batDauInHoaDon() {
             if(gioHang.length === 0) return alert("Phiếu giao trống!");
-            document.getElementById('nhapTenKhachHang').value = ''; // Reset ô nhập tên
+            document.getElementById('nhapTenKhachHang').value = ''; 
             document.getElementById('modalTenKhach').style.display = 'flex';
         }
 
-        function dongModalTenKhach() {
-            document.getElementById('modalTenKhach').style.display = 'none';
-        }
+        function dongModalTenKhach() { document.getElementById('modalTenKhach').style.display = 'none'; }
 
-        // Bấm xác nhận -> Lưu hóa đơn -> Đẩy ra máy in
         function xacNhanInHoaDon() {
             let tenKhach = document.getElementById('nhapTenKhachHang').value.trim();
-            if(!tenKhach) tenKhach = "Khách vãng lai"; // Mặc định nếu không nhập
-
+            if(!tenKhach) tenKhach = "Khách vãng lai";
             dongModalTenKhach();
             thucThiInVaLuu(gioHang, tenKhach);
         }
 
-        // Hàm chung dùng để in hóa đơn hiện tại HOẶC in lại hóa đơn cũ
-        // Hàm hỗ trợ loại bỏ dấu tiếng Việt chuyên dụng cho in bill Bluetooth
         function xoaDauInBill(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
         }
 
-        // Thay thế hàm in cũ bằng hàm In Web Bluetooth
-        // Thay thế hàm in cũ bằng hàm In Web Bluetooth (Khổ 80mm - 48 ký tự)
+        // --- 4. IN BLUETOOTH VÀ ĐỒNG BỘ HÓA ĐƠN LÊN MÂY ---
         async function thucThiInVaLuu(mangSanPhamIn, tenKhachHang, thoiGianLuuCu = null) {
             try {
                 const device = await navigator.bluetooth.requestDevice({
@@ -264,10 +284,9 @@
                 function canhGiua() { bytes.push(0x1B, 0x61, 0x01); }
                 function canhTrai() { bytes.push(0x1B, 0x61, 0x00); }
 
-                // --- VẼ HÓA ĐƠN TRÊN GIẤY KHỔ 80MM (48 KÝ TỰ/DÒNG) ---
                 canhGiua();
                 inDong("PHIEU GIAO HANG");
-                inDong("------------------------------------------------"); // Kéo dài đường kẻ thành 48 dấu gạch
+                inDong("------------------------------------------------"); 
 
                 canhTrai();
                 inDong("Khach hang: " + tenKhachHang);
@@ -277,10 +296,8 @@
                 mangSanPhamIn.forEach(item => {
                     const thanhTien = item.giaBan * item.soLuong;
                     tongTien += thanhTien;
-
                     inDong(item.tenSanPham.toUpperCase());
                     
-                    // Nâng khoảng trống tối đa lên 48 cho khổ 80mm
                     let strTrai = `${item.soLuong} x ${item.giaBan.toLocaleString('vi-VN')}d`;
                     let strPhai = `${thanhTien.toLocaleString('vi-VN')}d`;
                     let soKhoangTrang = 48 - strTrai.length - strPhai.length;
@@ -295,23 +312,20 @@
                 const timeString = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear().toString().slice(-2)} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
                 const soPhieu = Math.floor(Math.random() * 9000) + 1000;
 
-                // Tự động căn lề phải cho Tổng cộng và Tiền mặt
                 let tongStr = tongTien.toLocaleString('vi-VN') + "d";
-                let kcTong = 48 - 10 - tongStr.length; // 10 là độ dài chữ "Tong cong:"
+                let kcTong = 48 - 10 - tongStr.length;
                 inDong("Tong cong:" + " ".repeat(kcTong) + tongStr);
 
                 let tienMatStr = tongTien.toLocaleString('vi-VN') + "d";
-                let kcTien = 48 - 9 - tienMatStr.length; // 9 là độ dài chữ "Tien mat:"
+                let kcTien = 48 - 9 - tienMatStr.length;
                 inDong("Tien mat:" + " ".repeat(kcTien) + tienMatStr);
 
-                inDong("................................................"); // Kéo dài chấm bi
+                inDong("................................................"); 
 
-                // Căn lề cho thời gian và mã phiếu
                 let ticketStr = "#1-" + soPhieu;
                 let kcTime = 48 - timeString.length - ticketStr.length;
                 inDong(timeString + " ".repeat(kcTime) + ticketStr);
 
-                // Lệnh cắt giấy
                 bytes.push(0x0A, 0x0A, 0x0A);
                 bytes.push(0x1D, 0x56, 0x41, 0x00);
 
@@ -321,6 +335,7 @@
                     await characteristic.writeValue(duLieu.slice(i, i + chunkSize));
                 }
 
+                // GHI LÊN CLOUD NGAY SAU KHI IN (Chỉ lưu nếu là đơn mới)
                 if(!thoiGianLuuCu) {
                     const hoaDonMoi = {
                         idHoaDon: Date.now(),
@@ -328,9 +343,7 @@
                         thoiGian: now.toISOString(),
                         chiTiet: JSON.parse(JSON.stringify(mangSanPhamIn)) 
                     };
-                    let lichSu = JSON.parse(localStorage.getItem('lichSuHoaDon')) || [];
-                    lichSu.unshift(hoaDonMoi);
-                    localStorage.setItem('lichSuHoaDon', JSON.stringify(lichSu));
+                    db.collection("lichSuHoaDon").doc(hoaDonMoi.idHoaDon.toString()).set(hoaDonMoi);
                 }
 
                 server.disconnect();
@@ -342,24 +355,35 @@
             }
         }
 
-        /* --- LOGIC LỊCH SỬ HÓA ĐƠN --- */
+        // --- 5. LẤY LỊCH SỬ TỪ ĐÁM MÂY ---
         function moLichSuHoaDon() {
-            // Khi mở lịch sử lên thì tự động làm sạch ô tìm kiếm cũ
             document.getElementById('locTenKhach').value = '';
             document.getElementById('locNgayIn').value = '';
             document.getElementById('modalLichSu').style.display = 'block';
-            hienThiBangLichSu(); // Hiển thị toàn bộ
+            hienThiBangLichSu();
         }
 
-        function dongLichSuHoaDon() {
-            document.getElementById('modalLichSu').style.display = 'none';
-        }
+        function dongLichSuHoaDon() { document.getElementById('modalLichSu').style.display = 'none'; }
 
-        function hienThiBangLichSu() {
+        async function hienThiBangLichSu(duLieuLichSu = null) {
             const tbody = document.getElementById('bangLichSuNoiDung');
-            tbody.innerHTML = '';
-            let lichSu = JSON.parse(localStorage.getItem('lichSuHoaDon')) || [];
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">Đang tải từ đám mây ☁️...</td></tr>';
+            
+            let lichSu = duLieuLichSu;
 
+            // Nếu không truyền dữ liệu lọc vào thì gọi trực tiếp Firebase
+            if(!lichSu) {
+                lichSu = [];
+                try {
+                    const snapshot = await db.collection("lichSuHoaDon").orderBy("thoiGian", "desc").get();
+                    snapshot.forEach(doc => { lichSu.push(doc.data()); });
+                    window.lichSuTamThoi = lichSu; // Lưu vào bộ nhớ máy để lát tìm kiếm cho lẹ
+                } catch (error) {
+                    return tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">Lỗi kết nối máy chủ!</td></tr>';
+                }
+            }
+
+            tbody.innerHTML = '';
             if(lichSu.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">Chưa có lịch sử</td></tr>';
                 return;
@@ -367,7 +391,6 @@
 
             lichSu.forEach(hd => {
                 const d = new Date(hd.thoiGian);
-                // Định dạng ngày: DD/MM (Giờ:Phút)
                 const thoiGianHienThi = `${d.getDate()}/${d.getMonth()+1} (${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')})`;
                 
                 tbody.innerHTML += `
@@ -381,11 +404,25 @@
             });
         }
 
+        function xuLyLocLichSu() {
+            const tuKhoaTen = xoaDauTiengViet(document.getElementById('locTenKhach').value.trim());
+            const tuKhoaNgay = document.getElementById('locNgayIn').value.trim().toLowerCase(); 
+            
+            let lichSuGoc = window.lichSuTamThoi || [];
+            const lichSuDaLoc = lichSuGoc.filter(hd => {
+                const d = new Date(hd.thoiGian);
+                const thoiGianHienThi = `${d.getDate()}/${d.getMonth()+1} (${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')})`;
+                const dungTen = tuKhoaTen === "" || xoaDauTiengViet(hd.tenKhach).includes(tuKhoaTen);
+                const dungNgay = tuKhoaNgay === "" || thoiGianHienThi.toLowerCase().includes(tuKhoaNgay);
+                return dungTen && dungNgay;
+            });
+            hienThiBangLichSu(lichSuDaLoc);
+        }
+
         function inLaiHoaDon(id) {
-            let lichSu = JSON.parse(localStorage.getItem('lichSuHoaDon')) || [];
+            let lichSu = window.lichSuTamThoi || [];
             const hoaDonCanIn = lichSu.find(h => h.idHoaDon === id);
             if(hoaDonCanIn) {
-                // Gọi lại hàm in, truyền đúng danh sách món, tên khách và thời gian cũ vào
                 thucThiInVaLuu(hoaDonCanIn.chiTiet, hoaDonCanIn.tenKhach, hoaDonCanIn.thoiGian);
             }
         }
@@ -396,52 +433,6 @@
             gioHang = [];
             capNhatGioHang();
             dongGioHang();
-        }
-        function xuLyLocLichSu() {
-            const tuKhoaTen = xoaDauTiengViet(document.getElementById('locTenKhach').value.trim());
-            const tuKhoaNgay = document.getElementById('locNgayIn').value.trim().toLowerCase(); // VD gõ "9/6"
-            
-            let lichSuGoc = JSON.parse(localStorage.getItem('lichSuHoaDon')) || [];
-            
-            // Lọc ra các hóa đơn thỏa mãn cả 2 điều kiện (nếu ô tìm kiếm trống thì bỏ qua điều kiện đó)
-            const lichSuDaLoc = lichSuGoc.filter(hd => {
-                const d = new Date(hd.thoiGian);
-                const thoiGianHienThi = `${d.getDate()}/${d.getMonth()+1} (${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')})`;
-                
-                const dungTen = tuKhoaTen === "" || xoaDauTiengViet(hd.tenKhach).includes(tuKhoaTen);
-                const dungNgay = tuKhoaNgay === "" || thoiGianHienThi.toLowerCase().includes(tuKhoaNgay);
-                
-                return dungTen && dungNgay;
-            });
-            
-            // Hiển thị lại bảng với dữ liệu đã lọc
-            hienThiBangLichSu(lichSuDaLoc);
-        }
-
-        // Cải tiến hàm hiển thị bảng để nhận dữ liệu truyền vào (nếu không truyền thì lấy toàn bộ)
-        function hienThiBangLichSu(duLieuLichSu = null) {
-            const tbody = document.getElementById('bangLichSuNoiDung');
-            tbody.innerHTML = '';
-            let lichSu = duLieuLichSu || JSON.parse(localStorage.getItem('lichSuHoaDon')) || [];
-
-            if(lichSu.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">Không tìm thấy lịch sử phù hợp</td></tr>';
-                return;
-            }
-
-            lichSu.forEach(hd => {
-                const d = new Date(hd.thoiGian);
-                const thoiGianHienThi = `${d.getDate()}/${d.getMonth()+1} (${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')})`;
-                
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="cot-ten">${hd.tenKhach}</td>
-                        <td class="cot-ngay">${thoiGianHienThi}</td>
-                        <td class="cot-thao-tac">
-                            <button class="nut-in-lai" onclick="inLaiHoaDon(${hd.idHoaDon})">Xem/In lại</button>
-                        </td>
-                    </tr>`;
-            });
         }
 
         taiDuLieu();
