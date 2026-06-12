@@ -459,64 +459,90 @@ the-san-pham {
     display: none;
 }
 
+/* ------------------------------------------------ */
+/* CẤU HÌNH IN ẤN (ĐÃ SỬA LỖI CO RÚT TRÊN ANDROID) */
+/* ------------------------------------------------ */
 @media print {
-    /* Quan trọng: margin 0 ở @page sẽ ép trình duyệt ẩn dòng địa chỉ IP và ngày tháng (Header/Footer) mặc định */
     @page {
-        size: 80mm auto; /* Khổ giấy máy in bill K80 */
         margin: 0; 
     }
     
-    body * { visibility: hidden; }
-    
-    #khuVucIn, #khuVucIn * { 
-        visibility: visible; 
+    /* 1. Xóa sổ hoàn toàn giao diện web khỏi bộ nhớ in để không bị chiếm diện tích */
+    body > * { 
+        display: none !important; 
     }
     
+    /* 2. Chỉ đánh thức khu vực in và ép tràn viền 100% */
     #khuVucIn {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 72mm; /* Lùi lại chút so với 80mm để tránh lẹm biên máy in */
-        padding: 4mm;
-        display: block;
-        font-family: Arial, sans-serif; /* Font cơ bản cho máy in */
+        display: block !important;
+        width: 100% !important;
+        padding: 5mm !important;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
         color: black;
     }
 
+    /* 3. Phóng to chữ cho khổ K80 */
     .tieu-de-in {
-        font-size: 16px;
+        font-size: 26px;
         font-weight: bold;
         text-align: center;
+        margin-bottom: 12px;
+    }
+
+    .ten-khach-in {
+        font-size: 18px;
+        font-weight: bold;
         margin-bottom: 8px;
     }
 
     .duong-ke-in {
-        border-bottom: 1px dashed black;
-        margin-bottom: 10px;
+        border-bottom: 2px dashed black;
+        margin-bottom: 12px;
+        margin-top: 8px;
     }
 
-    /* Thiết kế form giống hệt ảnh mẫu bạn cung cấp */
     .dong-in {
-        margin-bottom: 12px;
+        margin-bottom: 14px;
     }
 
     .ten-sp-in {
-        font-size: 14px;
-        color: #333;
+        font-size: 18px;
+        font-weight: bold;
         margin-bottom: 4px;
-        /* font-weight: bold; (Bỏ in đậm nếu bạn muốn giống hệt ảnh mờ) */
     }
 
     .chi-tiet-in {
         display: flex;
         justify-content: space-between;
-        font-size: 14px;
-        color: #555;
+        font-size: 18px;
     }
 
-    .thanh-tien-in {
+    .tong-cong-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 24px;
         font-weight: bold;
-        color: black;
+        margin-top: 12px;
+        margin-bottom: 12px;
+    }
+
+    .tien-mat-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+
+    .duong-ke-cham-in {
+        border-bottom: 2px dotted black;
+        margin-bottom: 12px;
+    }
+
+    .thoi-gian-in {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
     }
 }
 /* --- SỬA THÀNH DẠNG DANH SÁCH (TABLE) NHƯ ẢNH 3 --- */
