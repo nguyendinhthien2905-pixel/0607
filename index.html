@@ -234,49 +234,44 @@
         }
 
         // Thay thế hàm in cũ bằng hàm In Web Bluetooth
+        // Thay thế hàm in cũ bằng hàm In Web Bluetooth (Khổ 80mm - 48 ký tự)
         async function thucThiInVaLuu(mangSanPhamIn, tenKhachHang, thoiGianLuuCu = null) {
             try {
-                // 1. Quét thiết bị Bluetooth xung quanh
                 const device = await navigator.bluetooth.requestDevice({
                     acceptAllDevices: true,
                     optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2']
                 });
 
-                // 2. Kết nối vào máy in Xprinter
                 const server = await device.gatt.connect();
                 const services = await server.getPrimaryServices();
                 const service = services[0];
                 const characteristics = await service.getCharacteristics();
                 
-                // Tìm luồng dữ liệu cho phép ghi (Write)
                 const characteristic = characteristics.find(c => c.properties.write || c.properties.writeWithoutResponse);
                 if (!characteristic) throw new Error("Máy in không hỗ trợ giao thức này.");
 
-                // 3. Biên dịch dữ liệu sang ngôn ngữ ESC/POS
                 let bytes = [];
-                bytes.push(0x1B, 0x40); // Lệnh dọn dẹp bộ nhớ máy in, chuẩn bị in
+                bytes.push(0x1B, 0x40);
 
-                // Hàm nạp từng dòng chữ vào mảng byte
                 function inDong(text) {
                     const textSua = xoaDauInBill(text);
                     for (let i = 0; i < textSua.length; i++) {
                         bytes.push(textSua.charCodeAt(i));
                     }
-                    bytes.push(0x0A); // Ký tự Enter (Xuống dòng)
+                    bytes.push(0x0A);
                 }
 
-                // Cấu hình Căn giữa và Căn trái
                 function canhGiua() { bytes.push(0x1B, 0x61, 0x01); }
                 function canhTrai() { bytes.push(0x1B, 0x61, 0x00); }
 
-                // --- VẼ HÓA ĐƠN TRÊN GIẤY ---
+                // --- VẼ HÓA ĐƠN TRÊN GIẤY KHỔ 80MM (48 KÝ TỰ/DÒNG) ---
                 canhGiua();
                 inDong("PHIEU GIAO HANG");
-                inDong("--------------------------------");
+                inDong("------------------------------------------------"); // Kéo dài đường kẻ thành 48 dấu gạch
 
                 canhTrai();
                 inDong("Khach hang: " + tenKhachHang);
-                inDong("--------------------------------");
+                inDong("------------------------------------------------");
 
                 let tongTien = 0;
                 mangSanPhamIn.forEach(item => {
@@ -285,41 +280,47 @@
 
                     inDong(item.tenSanPham.toUpperCase());
                     
-                    // Căn lề SLxGiá ở bên trái, Thành tiền ở bên phải
-                    // Giả sử khổ giấy 58mm/80mm chứa tối thiểu 32 ký tự/dòng
+                    // Nâng khoảng trống tối đa lên 48 cho khổ 80mm
                     let strTrai = `${item.soLuong} x ${item.giaBan.toLocaleString('vi-VN')}d`;
                     let strPhai = `${thanhTien.toLocaleString('vi-VN')}d`;
-                    let soKhoangTrang = 32 - strTrai.length - strPhai.length;
+                    let soKhoangTrang = 48 - strTrai.length - strPhai.length;
                     if (soKhoangTrang < 1) soKhoangTrang = 1;
 
                     inDong(strTrai + " ".repeat(soKhoangTrang) + strPhai);
                 });
 
-                inDong("--------------------------------");
+                inDong("------------------------------------------------");
 
                 const now = thoiGianLuuCu ? new Date(thoiGianLuuCu) : new Date();
                 const timeString = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear().toString().slice(-2)} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
                 const soPhieu = Math.floor(Math.random() * 9000) + 1000;
 
-                inDong("Tong cong:          " + tongTien.toLocaleString('vi-VN') + "d");
-                inDong("Tien mat:           " + tongTien.toLocaleString('vi-VN') + "d");
-                inDong("................................");
-                inDong(timeString + "      #1-" + soPhieu);
+                // Tự động căn lề phải cho Tổng cộng và Tiền mặt
+                let tongStr = tongTien.toLocaleString('vi-VN') + "d";
+                let kcTong = 48 - 10 - tongStr.length; // 10 là độ dài chữ "Tong cong:"
+                inDong("Tong cong:" + " ".repeat(kcTong) + tongStr);
 
-                // Lệnh đẩy giấy lên và cắt giấy
+                let tienMatStr = tongTien.toLocaleString('vi-VN') + "d";
+                let kcTien = 48 - 9 - tienMatStr.length; // 9 là độ dài chữ "Tien mat:"
+                inDong("Tien mat:" + " ".repeat(kcTien) + tienMatStr);
+
+                inDong("................................................"); // Kéo dài chấm bi
+
+                // Căn lề cho thời gian và mã phiếu
+                let ticketStr = "#1-" + soPhieu;
+                let kcTime = 48 - timeString.length - ticketStr.length;
+                inDong(timeString + " ".repeat(kcTime) + ticketStr);
+
+                // Lệnh cắt giấy
                 bytes.push(0x0A, 0x0A, 0x0A);
                 bytes.push(0x1D, 0x56, 0x41, 0x00);
 
-                // 4. Bắn dữ liệu xuống máy in
                 const duLieu = new Uint8Array(bytes);
-                
-                // Cắt nhỏ dữ liệu thành các gói 100 byte để truyền qua Bluetooth không bị nghẽn
                 const chunkSize = 100;
                 for (let i = 0; i < duLieu.length; i += chunkSize) {
                     await characteristic.writeValue(duLieu.slice(i, i + chunkSize));
                 }
 
-                // 5. Lưu vào Lịch sử (Chỉ lưu nếu là đơn mới)
                 if(!thoiGianLuuCu) {
                     const hoaDonMoi = {
                         idHoaDon: Date.now(),
@@ -332,7 +333,6 @@
                     localStorage.setItem('lichSuHoaDon', JSON.stringify(lichSu));
                 }
 
-                // Ngắt kết nối để giải phóng máy in
                 server.disconnect();
                 alert("Đã in xong!");
 
